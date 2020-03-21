@@ -11,6 +11,24 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 """
 
 import os
+import tensorflow as tf
+import pandas as pd
+import keras.backend as K
+from tensorflow.keras.models import load_model
+
+
+def accuracy_class(y_true, y_pred):
+    true = K.argmax(y_true, axis=1)
+    pred = K.argmax(y_pred, axis=1)
+    matches = K.equal(true, pred)
+    return K.mean(matches)
+
+
+MODEL = load_model('./pretrained_models/resnet50.model',
+                   custom_objects={'accuracy_class': accuracy_class})
+
+LANDMARK_ID_DF = pd.read_csv('datasets/landmark_id.csv')
+TRAIN_DF = pd.read_csv('datasets/train.csv')
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
