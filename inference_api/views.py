@@ -1,3 +1,5 @@
+import os
+import shutil
 import numpy as np
 import re
 from keras.applications.resnet50 import preprocess_input
@@ -6,7 +8,7 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from inference_api.serializers import PredictionSerializer
-from landmark_recognition.settings import MODEL, LANDMARK_ID_DF, TRAIN_DF
+from landmark_recognition.settings import MODEL, LANDMARK_ID_DF, TRAIN_DF, BASE_DIR
 
 
 class PredictionView(APIView):
@@ -48,6 +50,19 @@ class PredictionView(APIView):
             prediction_serializer.validated_data['landmark'] = most_probable_landmark
             prediction_serializer.validated_data['probability'] = probability
             prediction_serializer.save()
+
+            folder_rel_dir = 'media' + os.path.sep + 'upload' + os.path.sep + 'images' + os.path.sep
+            folder_abs_dir = os.path.join(BASE_DIR, folder_rel_dir)
+
+            for filename in os.listdir(folder_abs_dir):
+                file_path = os.path.join(folder_abs_dir, filename)
+                try:
+                    if os.path.isfile(file_path) or os.path.islink(file_path):
+                        os.unlink(file_path)
+                    elif os.path.isdir(file_path):
+                        shutil.rmtree(file_path)
+                except Exception as e:
+                    print(f'Failed to delete {file_path}: {e}')
 
             return Response(data=prediction_serializer.data,
                             status=status.HTTP_201_CREATED)
