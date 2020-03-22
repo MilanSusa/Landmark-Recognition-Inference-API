@@ -2,6 +2,8 @@ import os
 import shutil
 import numpy as np
 import re
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
 from keras.applications.resnet50 import preprocess_input
 from keras_preprocessing.image import ImageDataGenerator
 from rest_framework import status
@@ -13,6 +15,11 @@ from landmark_recognition.settings import MODEL, LANDMARK_ID_DF, TRAIN_DF, BASE_
 
 class PredictionView(APIView):
 
+    @swagger_auto_schema(
+        responses={
+            201: openapi.Response('Prediction', PredictionSerializer)
+        }
+    )
     def post(self, request):
         prediction_serializer = PredictionSerializer(data=request.data)
 
